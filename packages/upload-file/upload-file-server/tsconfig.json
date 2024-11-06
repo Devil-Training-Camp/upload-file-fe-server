@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "nodeNext",
+    // 指定编译目录（要编译哪个目录）
+    "rootDir": "./",
+    "outDir": "./dist",
+    // 目标语言版本
+    "target": "esnext",
+    "moduleResolution": "nodenext"
+  }
+}
