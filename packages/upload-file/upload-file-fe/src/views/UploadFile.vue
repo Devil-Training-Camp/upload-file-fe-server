@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import UploadFileList from '../components/UploadFileList.vue';
 import { ref, useTemplateRef } from 'vue';
-import { splitFile } from '@/utils/file';
+import { splitFile, uploadChunkList } from '@/utils/file';
 import { calMD5 } from '@/utils/hash';
+import { hasFile, mergeChunkToFile } from '@/api';
 
 const inputRef = useTemplateRef('inputRef');
 const percentage = ref<number>(0);
@@ -22,13 +23,39 @@ const uploadFile = async () => {
     });
     return;
   }
-  console.log('file: ', fileList.value[0])
+  console.log('file: ', fileList.value[0]);
   const chunkList = splitFile(fileList.value[0]);
   const fileHash = await calMD5(chunkList);
   console.log('fileHash: ', fileHash);
-  
+  const searchFileResult = await hasFile({ hash: fileHash });
+  if (searchFileResult.data.exist) {
+    percentage.value = 100;
+    ElMessage({
+      message: '上传成功',
+      type: 'success'
+    });
+    return;
+  }
+  const result = await uploadChunkList({
+    chunkList,
+    fileHash,
+    onTick(progress){
+      percentage.value = progress;
+    }
+  });
+  if (result) {
+    await mergeChunkToFile();
+    ElMessage({
+      message: '上传成功',
+      type: 'success'
+    });
+  }else {
+    ElMessage({
+      message: '上传失败',
+      type: 'error'
+    });
+  }
 };
-
 </script>
 
 <template>
@@ -37,7 +64,14 @@ const uploadFile = async () => {
       <input type="file" class="input" ref="inputRef" @change="filesChange" />
       点击上传文件</el-button
     >
-    <el-progress style="width: 90%" :percentage="percentage" :stroke-width="15" striped striped-flow status="" />
+    <el-progress
+      style="width: 90%"
+      :percentage="percentage"
+      :stroke-width="15"
+      striped
+      striped-flow
+      status=""
+    />
     <UploadFileList :fileList="fileList" />
     <footer>
       <el-button type="primary" @click="uploadFile">上传</el-button>
