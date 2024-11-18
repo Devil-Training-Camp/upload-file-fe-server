@@ -357,6 +357,10 @@
     {
       "packageName": "ts-config",
       "projectFolder": "config/ts-config"
+    },
+    {
+      "packageName": "file-storage",
+      "projectFolder": "packages/file-storage"
     }
     // {
     //   /**
