@@ -1,4 +1,5 @@
 {
+  "extends": "ts-config/tsconfig.base.json",
   "compilerOptions": {
     "module": "nodeNext",
     // 指定编译目录（要编译哪个目录）
