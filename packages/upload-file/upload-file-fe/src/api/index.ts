@@ -1,14 +1,10 @@
 import axios from 'axios';
+import { UPLOAD_PREFIX, HAS_FILE } from 'upload-file-server/const';
+import type { FindFileResponse } from 'upload-file-server/types';
 
 const fileAxiosInstance = axios.create({
-  baseURL: '/'
+  baseURL: '/api'
 });
-
-const hasFilePath = '/hasFile';
-type hasFileRes = {
-  code: number;
-  exist: boolean;
-};
 
 type fileParams = {
   hash: string;
@@ -16,15 +12,10 @@ type fileParams = {
 };
 
 export const hasFile = async (params: fileParams) => {
-  // let res = await fileAxiosInstance.get<hasFileRes>(hasFilePath, {
-  //   params
-  // });
-  const res = {
-    data: {
-      code: 200,
-      exist: false
-    }
-  }
+  const res = await fileAxiosInstance.get<FindFileResponse>(`${UPLOAD_PREFIX}${HAS_FILE}`, {
+    params
+  });
+  console.log(res)
   return res;
 };
 

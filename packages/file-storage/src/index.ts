@@ -1,3 +1,1 @@
-
-
-
+export { FileChunkService } from './chunk';

@@ -17,6 +17,7 @@
     "vue": "^3.5.12",
     "vue-router": "^4.4.5",
     "ts-config": "workspace:*",
+    "upload-file-server": "workspace:*",
     "element-plus": "~2.8.7",
     "@element-plus/icons-vue": "~2.3.1",
     "spark-md5": "~3.0.2",

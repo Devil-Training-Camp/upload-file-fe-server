@@ -2,10 +2,14 @@
   "name": "upload-file-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./src/main.ts",
+  "exports": {
+    "./types": "./src/types/index.ts",
+    "./const": "./src/const/index.ts"
+  },
   "scripts": {
     "build": "tsc -b",
-    "dev": "nodemon src/app.ts",
+    "dev": "nodemon src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

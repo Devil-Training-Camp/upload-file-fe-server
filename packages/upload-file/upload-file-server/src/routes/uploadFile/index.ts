@@ -1,13 +1,3 @@
-
-import { type Context } from 'koa'
-
-
-export const hasFile = (ctx: Context) => {
-  ctx.body = 'hello world';
-}
-export const uploadChunk = (ctx: Context) => {
-  ctx.body = 'hello world1';
-}
-export const mergeChunk = (ctx: Context) => {
-  ctx.body = 'hello world2';
-}
+export { default as hasFile } from './searchFile';
+export { default as mergeChunk } from './mergeChunk';
+export { default as uploadChunk } from './uploadChunk';

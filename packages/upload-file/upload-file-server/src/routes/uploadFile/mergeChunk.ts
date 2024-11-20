@@ -1,0 +1,5 @@
+import { type Context } from 'koa';
+
+export default (ctx: Context) => {
+  ctx.body = 'merge File';
+}

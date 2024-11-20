@@ -1,7 +1,8 @@
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import Storage from './storage';
 
-class FileSystemStorage {
+class FileSystemStorage extends Storage {
   async hasFile(path: string): Promise<boolean> {
     try {
       const fileStat = await stat(path);
@@ -35,7 +36,7 @@ class FileSystemStorage {
   async ls(dirPath: string) {
     if (await this.hasDir(dirPath)) {
       const res = await readdir(dirPath);
-      return res.map(item => path.resolve(dirPath, item));
+      return res.map((item) => path.resolve(dirPath, item));
     } else {
       throw 'path is not a directory';
     }
