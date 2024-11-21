@@ -1,8 +1,8 @@
 import SparkMD5 from 'spark-md5';
+import type { piece } from './file';
 
-type fileChunkList = Blob[];
 
-export const calMD5 = async (chunkList: fileChunkList) => {
+export const calMD5 = async (chunkList: piece[]) => {
   const spark = new SparkMD5.ArrayBuffer();
   const fileReader = new FileReader();
   for (let i = 0; i < chunkList.length; i++) {
@@ -12,9 +12,9 @@ export const calMD5 = async (chunkList: fileChunkList) => {
   return spark.end();
 }
 
-const readChunkToHash = (fileReader: FileReader, chunk: Blob) => {
+const readChunkToHash = (fileReader: FileReader, chunk: piece) => {
   return new Promise((resolve, reject) => {
-    fileReader.readAsArrayBuffer(chunk);
+    fileReader.readAsArrayBuffer(chunk.chunk);
     fileReader.onload = (e) => {
       const hash = e.target?.result;
       resolve(hash);

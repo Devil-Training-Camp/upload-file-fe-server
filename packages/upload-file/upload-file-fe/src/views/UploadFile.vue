@@ -28,7 +28,7 @@ const uploadFile = async () => {
   const fileHash = await calMD5(chunkList);
   console.log('fileHash: ', fileHash);
   const searchFileResult = await hasFile({ hash: fileHash });
-  if (searchFileResult.data.exist) {
+  if (searchFileResult.isExist) {
     percentage.value = 100;
     ElMessage({
       message: '上传成功',

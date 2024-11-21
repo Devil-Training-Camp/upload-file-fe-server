@@ -16,7 +16,7 @@ export const hasFile = async (params: fileParams) => {
     params
   });
   console.log(res)
-  return res;
+  return res.data.data;
 };
 
 export const uploadChunk = async () => {
