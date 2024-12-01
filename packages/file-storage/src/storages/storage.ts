@@ -10,4 +10,10 @@ export default abstract class Storage {
   abstract writeFile(path: string, value: Buffer): Promise<void>;
 
   abstract ls(dirPath: string): Promise<string[]>;
+
+  async mergeFile(pathList: string[], savePath: string) {
+    const contentList = await Promise.all(pathList.map((path) => this.readFile(path)));
+    const buffer = Buffer.concat(contentList);
+    await this.writeFile(savePath, buffer);
+  }
 }

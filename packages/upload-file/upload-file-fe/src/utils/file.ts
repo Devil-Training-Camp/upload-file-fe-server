@@ -1,6 +1,10 @@
 import { CHUNK_SIZE } from '@/const';
 import requestLimit, { type limitFunction } from './requestLimit';
 import { hasFile, uploadChunk } from '@/api';
+import { useUploadFileStore } from '@/stores/counter';
+import piniaInstance from '@/stores';
+
+const uploadFileStore = useUploadFileStore(piniaInstance);
 
 export interface piece {
   chunk: Blob;
@@ -26,10 +30,19 @@ export const uploadChunkList = async (params: {
   chunkList: piece[];
   fileHash: string;
   onTick: (progress: number) => void;
+  signal: AbortSignal;
 }) => {
-  const { chunkList, fileHash, onTick } = params;
+  const { chunkList, fileHash, onTick, signal } = params;
   const limit = requestLimit(3);
-  const res = await upload({ len: chunkList.length, successLen: 0, chunkList, limit, fileHash, onTick });
+  const res = await upload({
+    len: chunkList.length,
+    successLen: 0,
+    chunkList,
+    limit,
+    fileHash,
+    onTick,
+    signal
+  });
   return res;
 };
 
@@ -41,39 +54,57 @@ const upload = async (
     limit: limitFunction;
     fileHash: string;
     onTick: (progress: number) => void;
+    signal: AbortSignal;
   },
   curRetryCount: number = 0,
   totalRetryCount: number = 0
 ) => {
-  let { len, successLen, chunkList, limit, fileHash, onTick } = options;
-  if (totalRetryCount <= curRetryCount) {
+  let { len, successLen, chunkList, limit, fileHash, onTick, signal } = options;
+  if (totalRetryCount < curRetryCount || !uploadFileStore.isUploading) {
     return false;
   }
-  const requestList = [];
+  const requestList: Promise<void>[] = [];
   const failList: piece[] = [];
+  let curQueueReject: (reason?: any) => void;
   for (let i = 0; i < chunkList.length; i++) {
     const chunk = chunkList[i];
     requestList.push(
       limit(() =>
         new Promise(async (resolve, reject) => {
           try {
-            const { isExist } = await hasFile({
-              hash: fileHash,
-              index: chunk.index
-            });
+            const { isExist } = await hasFile(
+              {
+                hash: fileHash,
+                index: chunk.index
+              },
+              signal
+            );
+            console.log(isExist, '1111111');
             if (isExist) {
               resolve('OK');
             } else {
-              await uploadChunk();
-              resolve(chunk);
+              await uploadChunk(
+                {
+                  hash: fileHash,
+                  index: chunk.index,
+                  chunk: chunk.chunk
+                },
+                signal
+              );
+              resolve('OK');
             }
           } catch (error) {
+            console.log('uploadFileStore.isUploading ', uploadFileStore.isUploading);
+            if (!uploadFileStore.isUploading) {
+              curQueueReject();
+              limit.cancelRequest();
+            }
             reject(error);
           }
         })
           .then(() => {
             successLen++;
-            onTick((successLen / len) * 100);
+            onTick(Math.floor((successLen / len) * 100));
           })
           .catch(() => {
             failList.push(chunk);
@@ -81,10 +112,18 @@ const upload = async (
       )
     );
   }
-  await Promise.allSettled(requestList);
+  try {
+    await new Promise(async (resolve, reject) => {
+      curQueueReject = reject;
+      await Promise.allSettled(requestList);
+      resolve('ok');
+    });
+  } catch (error) {
+    return false;
+  }
   if (failList.length > 0) {
     return await upload(
-      { len, successLen, chunkList: failList, limit, fileHash, onTick },
+      { len, successLen, chunkList: failList, limit, fileHash, onTick, signal },
       ++curRetryCount,
       totalRetryCount
     );

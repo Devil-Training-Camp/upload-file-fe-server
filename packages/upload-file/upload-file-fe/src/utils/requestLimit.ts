@@ -3,6 +3,7 @@ type requestFunc<ReturnType> = () => PromiseLike<ReturnType> | ReturnType;
 
 export type limitFunction = {
   <ReturnType>(function_: requestFunc<ReturnType>): Promise<ReturnType>;
+  cancelRequest: () => void;
 };
 
 export default function requestLimit(concurrency: number) {
@@ -14,6 +15,7 @@ export default function requestLimit(concurrency: number) {
 
   const next = () => {
     activeCount--;
+    console.log(1111111111, requestPool.length);
     if (requestPool.length > 0) {
       requestPool.shift()!();
     }
@@ -21,11 +23,13 @@ export default function requestLimit(concurrency: number) {
 
   const run = async (func: requestFunc<unknown>, resolve: any, reject: any) => {
     activeCount++;
-
+    console.log('run');
     try {
       const result = await func();
+      console.log('result')
       resolve(result);
     } catch (error) {
+      console.log('catch')
       reject(error);
     }
     next();
@@ -43,6 +47,16 @@ export default function requestLimit(concurrency: number) {
       enqueue(func, resolve, reject);
     });
   };
+  request.cancelRequest = () => {
+    requestPool = [];
+  };
+  Object.defineProperties(request, {
+    cancelRequest: {
+      configurable: false,
+      writable: false
+    }
+  });
+
   return request;
 }
 

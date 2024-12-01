@@ -10,7 +10,7 @@ const { fileList } = defineProps<{
 
 <template>
   <div class="list">
-    <div v-for="(item, index) in fileList" :key="index" class="item">{{ item.name + " -----该文件大小: " + prettysize(item.size) }} <el-button text :icon="Delete" size="small"></el-button></div>
+    <div v-for="(item, index) in fileList" :key="index" class="item">{{ item.name + " -----该文件大小: " + prettysize(item.size) }} <el-button text :icon="Delete" size="small" @click="$emit('deleteFile', index)"></el-button></div>
   </div>
 </template>
 
@@ -18,7 +18,6 @@ const { fileList } = defineProps<{
 .list {
   width: 100%;
   height: 150px;
-  overflow-y: scroll;
 }
 .item {
   display: flex;
