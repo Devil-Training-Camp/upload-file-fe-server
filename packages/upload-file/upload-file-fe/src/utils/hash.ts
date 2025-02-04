@@ -1,26 +1,14 @@
-import SparkMD5 from 'spark-md5';
 import type { piece } from './file';
-
+import hashWorker from './hashWorker.ts?worker';
 
 export const calMD5 = async (chunkList: piece[]) => {
-  const spark = new SparkMD5.ArrayBuffer();
-  const fileReader = new FileReader();
-  for (let i = 0; i < chunkList.length; i++) {
-    const hash = await readChunkToHash(fileReader, chunkList[i]);
-    spark.append(hash);
-  }
-  return spark.end();
-}
-
-const readChunkToHash = (fileReader: FileReader, chunk: piece) => {
-  return new Promise((resolve, reject) => {
-    fileReader.readAsArrayBuffer(chunk.chunk);
-    fileReader.onload = (e) => {
-      const hash = e.target?.result;
-      resolve(hash);
+  const worker = new hashWorker();
+  worker.postMessage({
+    chunkList
+  });
+  return new Promise((resolve) => {
+    worker.onmessage = (e) => {
+      resolve(e.data.hash);
     };
-    fileReader.onerror = () => {
-      reject('Error reading chunk');
-    }
-  })
-}
+  });
+};

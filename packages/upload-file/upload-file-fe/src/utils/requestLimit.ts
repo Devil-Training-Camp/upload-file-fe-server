@@ -15,7 +15,6 @@ export default function requestLimit(concurrency: number) {
 
   const next = () => {
     activeCount--;
-    console.log(1111111111, requestPool.length);
     if (requestPool.length > 0) {
       requestPool.shift()!();
     }
